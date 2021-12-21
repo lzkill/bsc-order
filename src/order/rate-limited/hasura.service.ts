@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import Bottleneck from 'bottleneck';
+import { AppConfigService } from 'src/config/config.service';
 import { HasuraService } from 'src/shared/hasura/hasura.service';
 import { AppLoggerService } from 'src/shared/logger/logger.service';
 
@@ -7,7 +8,11 @@ import { AppLoggerService } from 'src/shared/logger/logger.service';
 export class RateLimitedHasuraService {
   private limiter: Bottleneck;
 
-  constructor(private logger: AppLoggerService, private hasura: HasuraService) {
+  constructor(
+    private config: AppConfigService,
+    private logger: AppLoggerService,
+    private hasura: HasuraService,
+  ) {
     this.init();
   }
 
@@ -20,7 +25,7 @@ export class RateLimitedHasuraService {
     try {
       this.limiter = new Bottleneck({
         maxConcurrent: 1,
-        minTime: 60000 / 60,
+        minTime: this.config.hasura.minInterval,
       });
       this.limiter.on('error', function (error) {
         this.logger.error(error);
