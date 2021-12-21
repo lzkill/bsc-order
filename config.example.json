@@ -1,0 +1,30 @@
+{
+  "app": {
+    "name": "bsc-order",
+    "checkInterval": 15000,
+    "historySize": 100,
+    "enabled": true
+  },
+  "biscoint": {
+    "apiKey": "",
+    "apiSecret": "",
+    "apiUrl": "https://api.biscoint.io/",
+    "apiTimeout": 15000
+  },
+  "hasura": {
+    "apiEndpoint": "",
+    "adminSecret": ""
+  },
+  "papertrail": {
+    "token": "",
+    "enabled": true
+  },
+  "rabbitmq": {
+    "uri": ""
+  },
+  "telegram": {
+    "token": "",
+    "chatId": "",
+    "enabled": true
+  }
+}

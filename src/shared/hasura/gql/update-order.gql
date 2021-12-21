@@ -1,0 +1,5 @@
+mutation updateOrder($id: Int!, $checkedAt: timestamptz, $status: String, $offerId: Int) {
+  update_biscoint_order_by_pk(pk_columns: {id: $id}, _set: {checkedAt: $checkedAt, status: $status, offerId: $offerId}) {
+    id
+  }
+}

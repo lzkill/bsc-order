@@ -1,0 +1,30 @@
+query findOpenOrders {
+  biscoint_order(where: {status: {_eq: "open"}}) {
+    amount
+    base
+    checkedAt
+    createdAt
+    id
+    isQuote
+    notBefore
+    op
+    refPrice
+    status
+    offer {
+      apiKeyId
+      base
+      baseAmount
+      confirmedAt
+      createdAt
+      efPrice
+      expiresAt
+      id
+      isQuote
+      offerId
+      op
+      quote
+      quoteAmount
+    }
+    offerId
+  }
+}

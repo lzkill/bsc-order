@@ -1,0 +1,5 @@
+mutation updateOffer($id: Int!, $apiKeyId: String, $baseAmount: String, $confirmedAt: timestamptz, $createdAt: timestamptz, $efPrice: String, $expiresAt: timestamptz, $offerId: String, $quoteAmount: String) {
+  update_biscoint_offer_by_pk(pk_columns: {id: $id}, _set: {apiKeyId: $apiKeyId, baseAmount: $baseAmount, confirmedAt: $confirmedAt, createdAt: $createdAt, efPrice: $efPrice, expiresAt: $expiresAt, offerId: $offerId, quoteAmount: $quoteAmount}) {
+    id
+  }
+}

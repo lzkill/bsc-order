@@ -1,0 +1,5 @@
+mutation createOffer($input: biscoint_offer_insert_input!) {
+  insert_biscoint_offer_one(object: $input) {
+    id
+  }
+}
