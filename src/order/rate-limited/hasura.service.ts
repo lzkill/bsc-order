@@ -49,9 +49,7 @@ export class RateLimitedHasuraService {
   }
 
   async createOffer(offer) {
-    const created = await this.limiter.schedule(() =>
-      this.hasura.createOffer(offer),
-    );
-    return created.insert_biscoint_offer_one.id;
+    return (await this.limiter.schedule(() => this.hasura.createOffer(offer)))
+      .insert_biscoint_offer_one.id;
   }
 }
