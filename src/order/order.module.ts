@@ -5,7 +5,7 @@ import { HasuraModule } from 'src/shared/hasura/hasura.module';
 import { OrderService } from './order.service';
 import { RateLimitedBiscointService } from './rate-limited/biscoint.service';
 import { RateLimitedHasuraService } from './rate-limited/hasura.service';
-import { TelegramService } from './telegram.service';
+import { TelegramService } from './rate-limited/telegram.service';
 
 @Module({
   imports: [BiscointModule, BrokerModule, HasuraModule],
