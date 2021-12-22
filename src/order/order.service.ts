@@ -5,6 +5,7 @@ import { RABBITMQ_BISCOINT_CONFIRM_KEY } from 'src/app-constants';
 import { AppConfigService } from 'src/config/config.service';
 import { BrokerService } from 'src/shared/broker/broker.service';
 import { AppLoggerService } from 'src/shared/logger/logger.service';
+import { BackOffPolicy, Retryable } from 'typescript-retry-decorator';
 import { RateLimitedBiscointService } from './rate-limited/biscoint.service';
 import { RateLimitedHasuraService } from './rate-limited/hasura.service';
 
@@ -77,13 +78,13 @@ export class OrderService {
             if (isTimeToFulfil) await this.fulfillOrder(order);
           } else {
             order.offer.confirmedAt = trade.date;
-            this.hasura.updateOffer(order.offer);
+            this.updateOffer(order.offer);
             order.status = 'closed';
             // TODO Notify order closed
           }
 
           order.checkedAt = moment.utc();
-          this.hasura.updateOrder(order);
+          this.updateOrder(order);
         }
       }
     } catch (e) {
@@ -109,11 +110,11 @@ export class OrderService {
 
           // Upsert offer
           if (!order.offer) {
-            const id = await this.hasura.createOffer(offer);
+            const id = await this.createOffer(offer);
             order.offerId = id;
           } else {
             Object.assign(order.offer, offer);
-            this.hasura.updateOffer(order.offer);
+            this.updateOffer(order.offer);
           }
         }
       }
@@ -141,5 +142,47 @@ export class OrderService {
         ? +offer.efPrice <= +order.refPrice
         : +offer.efPrice >= +order.refPrice
       : true;
+  }
+
+  @Retryable({
+    maxAttempts: 10,
+    backOffPolicy: BackOffPolicy.ExponentialBackOffPolicy,
+    backOff: 1000,
+    exponentialOption: { maxInterval: 5000, multiplier: 2 },
+  })
+  private createOffer(offer) {
+    try {
+      return this.hasura.createOffer(offer);
+    } catch (e) {
+      this.logger.error(e);
+    }
+  }
+
+  @Retryable({
+    maxAttempts: 10,
+    backOffPolicy: BackOffPolicy.ExponentialBackOffPolicy,
+    backOff: 1000,
+    exponentialOption: { maxInterval: 5000, multiplier: 2 },
+  })
+  private updateOffer(offer) {
+    try {
+      return this.hasura.updateOffer(offer);
+    } catch (e) {
+      this.logger.error(e);
+    }
+  }
+
+  @Retryable({
+    maxAttempts: 10,
+    backOffPolicy: BackOffPolicy.ExponentialBackOffPolicy,
+    backOff: 1000,
+    exponentialOption: { maxInterval: 5000, multiplier: 2 },
+  })
+  private updateOrder(order) {
+    try {
+      return this.hasura.updateOrder(order);
+    } catch (e) {
+      this.logger.error(e);
+    }
   }
 }
