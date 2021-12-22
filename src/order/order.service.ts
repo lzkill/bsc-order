@@ -98,33 +98,41 @@ export class OrderService {
   }
 
   private async fulfillOrder(order) {
-    const offer = await this.getOffer(order);
-    if (offer) {
-      const isPriceGood = this.isPriceGood(order, offer);
-      if (isPriceGood) {
-        await this.broker.publish(RABBITMQ_BISCOINT_CONFIRM_KEY, {
-          offers: [offer],
-        });
+    try {
+      const offer = await this.getOffer(order);
+      if (offer) {
+        const isPriceGood = this.isPriceGood(order, offer);
+        if (isPriceGood) {
+          await this.broker.publish(RABBITMQ_BISCOINT_CONFIRM_KEY, {
+            offers: [offer],
+          });
 
-        // Upsert offer
-        if (!order.offer) {
-          const id = await this.hasura.createOffer(offer);
-          order.offerId = id;
-        } else {
-          Object.assign(order.offer, offer);
-          this.hasura.updateOffer(order.offer);
+          // Upsert offer
+          if (!order.offer) {
+            const id = await this.hasura.createOffer(offer);
+            order.offerId = id;
+          } else {
+            Object.assign(order.offer, offer);
+            this.hasura.updateOffer(order.offer);
+          }
         }
       }
+    } catch (e) {
+      this.logger.error(e);
     }
   }
 
   private getOffer(order) {
-    return this.biscoint.getOffer({
-      base: order.base,
-      amount: order.amount,
-      op: order.op as OP,
-      isQuote: order.isQuote,
-    });
+    try {
+      return this.biscoint.getOffer({
+        base: order.base,
+        amount: order.amount,
+        op: order.op as OP,
+        isQuote: order.isQuote,
+      });
+    } catch (e) {
+      this.logger.error(e);
+    }
   }
 
   private isPriceGood(order, offer) {
