@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ITradesResult, OP } from 'biscoint-api-node/dist/typings/biscoint';
 import * as _ from 'lodash';
-import { RABBITMQ_BISCOINT_CONFIRM_KEY } from 'src/app-constants';
+import {
+  RABBITMQ_BISCOINT_CONFIRM_KEY,
+  RABBITMQ_BISCOINT_NOTIFY_KEY,
+} from 'src/app-constants';
 import { AppConfigService } from 'src/config/config.service';
 import { BrokerService } from 'src/shared/broker/broker.service';
 import { AppLoggerService } from 'src/shared/logger/logger.service';
@@ -12,12 +15,7 @@ import { RateLimitedHasuraService } from './rate-limited/hasura.service';
 const moment = require('moment');
 
 enum TradeEvent {
-  ORDER_CLOSED = 'order_closed',
-}
-
-interface NotifyJob {
-  event: TradeEvent;
-  payload: any;
+  ORDER_CLOSED = 'order-closed',
 }
 
 @Injectable()
@@ -80,7 +78,7 @@ export class OrderService {
             order.offer.confirmedAt = trade.date;
             this.updateOffer(order.offer);
             order.status = 'closed';
-            // TODO Notify order closed
+            this.notify(order, TradeEvent.ORDER_CLOSED);
           }
 
           order.checkedAt = moment.utc();
@@ -181,6 +179,17 @@ export class OrderService {
   private updateOrder(order) {
     try {
       return this.hasura.updateOrder(order);
+    } catch (e) {
+      this.logger.error(e);
+    }
+  }
+
+  private notify(order, event: TradeEvent) {
+    try {
+      this.broker.publish(RABBITMQ_BISCOINT_NOTIFY_KEY, {
+        event: event,
+        payload: order,
+      });
     } catch (e) {
       this.logger.error(e);
     }
