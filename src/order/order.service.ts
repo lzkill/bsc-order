@@ -106,14 +106,8 @@ export class OrderService {
             offers: [offer],
           });
 
-          // Upsert offer
-          if (!order.offer) {
-            const id = await this.createOffer(offer);
-            order.offerId = id;
-          } else {
-            Object.assign(order.offer, offer);
-            this.updateOffer(order.offer);
-          }
+          const offerId = await this.createOffer(offer);
+          order.offerId = offerId;
         }
       }
     } catch (e) {
