@@ -32,8 +32,8 @@ export class RateLimitedHasuraService {
   }
 
   async findOpenOrders() {
-    return (await this.limiter.schedule(() => this.hasura.findOpenOrders()))
-      .biscoint_order;
+    const orders = await this.limiter.schedule(() => this.hasura.findOpenOrders());
+    return orders.biscoint_order;
   }
 
   updateOrder(order) {
@@ -45,7 +45,7 @@ export class RateLimitedHasuraService {
   }
 
   async createOffer(offer) {
-    return (await this.limiter.schedule(() => this.hasura.createOffer(offer)))
-      .insert_biscoint_offer_one.id;
+    const _offer = await this.limiter.schedule(() => this.hasura.createOffer(offer));
+    return _offer.insert_biscoint_offer_one.id;
   }
 }
